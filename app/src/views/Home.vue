@@ -18,7 +18,7 @@
               start
             ></v-icon>
 
-            {{usr.name}}
+            {{usr.displayName}}
           </v-card-title>
         </template>
 
@@ -54,8 +54,8 @@
       <v-card-item>
         <v-card-title class="text-body-2 d-flex align-center">
           <v-icon
-            color="#08be35"
-            icon="mdi-clock-check"
+            :color="!isChechin ? colors['disabled'] : colors['checkIn']"
+            :icon="isChechin ? 'mdi-clock-check' : 'mdi-coffee-to-go'"
             start
           ></v-icon>
 
@@ -90,6 +90,7 @@
 
         <v-btn
           class="me-2 text-none"
+          :disabled="isSavingCheckIn"
           :color="isChechin ? colors['disabled'] : colors['checkIn']"
           prepend-icon="mdi-check"
           variant="flat"
@@ -100,6 +101,7 @@
 
         <v-btn
           border
+          :disabled="isSavingBrb"
           :color="!isChechin ? colors['disabled'] : colors['brb']"
           class="me-2 text-none"
           prepend-icon="mdi-coffee-to-go"
@@ -115,8 +117,16 @@
 
 <script setup>
   import { ref } from 'vue';
-  const date = new Date()
+  import { getCurrentUser } from 'vuefire';
+  import { db } from '@/main';
+  import { collection, addDoc } from "firebase/firestore";
+
+  const TABLE_NAME = 'checkin';
+  const date = ref(new Date())
   const isChechin = ref(false)
+  const isSavingCheckIn = ref(false)
+  const isSavingBrb     = ref(false)
+
   const promoText = {
     title: 'Check-In/Brb',
     desc: 'This software helps Lexart business and management to understand availability.'
@@ -127,17 +137,56 @@
     'disabled': '#4f545c'
   }
   const usr = ref({
-    name: 'Alex Casadevall'
+    displayName: ''
   })
   const activeUsers = ref("0")
 
-  const doCheckIn = function (){
-    isChechin.value = true
+  const doCheckIn = async function (){
+    if(isChechin.value === false){
+      isSavingCheckIn.value = true
+      const docRef = await addDoc(collection(db, TABLE_NAME), {
+        date: +new Date(),
+        email: usr.value?.email,
+        isOtpValid: true,
+        tenant: 'lexart',
+        timeBrb: null,
+        timeCheckin: +new Date(),
+        username: usr.value?.displayName
+      });
+      console.log("CHECKIN: Document written with ID: ", docRef.id);
+      isSavingCheckIn.value = false
+      isChechin.value       = true
+      date.value            = new Date()
+    }
   }
 
-  const doBrb = function (){
-    isChechin.value = false
+  const doBrb = async function (){
+    if(isChechin.value === true){
+      isSavingBrb.value = true
+      const docRef = await addDoc(collection(db, TABLE_NAME), {
+        date: +new Date(),
+        email: usr.value?.email,
+        isOtpValid: true,
+        tenant: 'lexart',
+        timeBrb: +new Date(),
+        timeCheckin: null,
+        username: usr.value?.displayName
+      });
+      console.log("BRB: Document written with ID: ", docRef.id);
+      isSavingBrb.value = false
+      isChechin.value   = false
+      date.value        = new Date()
+    }
   }
+
+  // Runner
+  async function runner () {
+    const fbUser = await getCurrentUser()
+    usr.value   = {...fbUser}
+    console.log("currentUser: ", usr)
+  }
+  runner()
+
 </script>
 
 <style scoped>
