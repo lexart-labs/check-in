@@ -119,13 +119,17 @@
   import { ref } from 'vue';
   import { getCurrentUser } from 'vuefire';
   import { db } from '@/main';
-  import { collection, addDoc } from "firebase/firestore";
+  import { collection, addDoc, doc, getDoc, setDoc } from "firebase/firestore";
 
   const TABLE_NAME = 'checkin';
   const date = ref(new Date())
   const isChechin = ref(false)
   const isSavingCheckIn = ref(false)
   const isSavingBrb     = ref(false)
+  const docId           = ref({
+    checkIn: "", 
+    brb: ""
+  })
 
   const promoText = {
     title: 'Check-In/Brb',
@@ -142,7 +146,27 @@
   const activeUsers = ref("0")
 
   const doCheckIn = async function (){
-    if(isChechin.value === false){
+    let isEditDoc = false
+    console.log("docId.checkIn.value: ", docId.value.checkIn)
+    if(docId.value.checkIn !== "" && isChechin.value === false){
+      // get data by ID
+      const docRef  = await doc(db, TABLE_NAME, docId.value)
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        console.log("docRef CHECKIN :: ", docSnap.data());
+        isEditDoc = true
+      }
+      const docRefEdit = await setDoc(docRef, {
+        date: +new Date(),
+        email: usr.value?.email,
+        isOtpValid: true,
+        tenant: 'lexart',
+        timeBrb: null,
+        timeCheckin: +new Date(),
+        username: usr.value?.displayName
+      });
+    }
+    if(isChechin.value === false && !isEditDoc){
       isSavingCheckIn.value = true
       const docRef = await addDoc(collection(db, TABLE_NAME), {
         date: +new Date(),
@@ -154,6 +178,8 @@
         username: usr.value?.displayName
       });
       console.log("CHECKIN: Document written with ID: ", docRef.id);
+      // store ID in docId value
+      docId.value.checkIn   = docRef.id
       isSavingCheckIn.value = false
       isChechin.value       = true
       date.value            = new Date()
@@ -161,9 +187,15 @@
   }
 
   const doBrb = async function (){
-    if(isChechin.value === true){
+    if(docId.value.checkIn !== "" && isChechin.value === true){
       isSavingBrb.value = true
-      const docRef = await addDoc(collection(db, TABLE_NAME), {
+      // get data by ID
+      const docRef  = await doc(db, TABLE_NAME, docId.value.checkIn)
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        console.log("docRef CHECKIN :: ", docSnap.data());
+      }
+      const docRefEdit = await setDoc(docRef, {
         date: +new Date(),
         email: usr.value?.email,
         isOtpValid: true,
@@ -172,13 +204,15 @@
         timeCheckin: null,
         username: usr.value?.displayName
       });
-      console.log("BRB: Document written with ID: ", docRef.id);
       isSavingBrb.value = false
       isChechin.value   = false
-      date.value        = new Date()
     }
   }
 
+  // Get all active users
+  async function getActiveUsers (){
+
+  }
   // Runner
   async function runner () {
     const fbUser = await getCurrentUser()
