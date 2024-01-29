@@ -119,7 +119,9 @@
   import { ref } from 'vue';
   import { getCurrentUser } from 'vuefire';
   import { db } from '@/main';
-  import { collection, addDoc, doc, getDoc, setDoc } from "firebase/firestore";
+  import { collection, addDoc, doc, getDoc, setDoc, getDocs } from "firebase/firestore";
+  import lodash from 'lodash';
+  import utils from '@/utils'
 
   const TABLE_NAME = 'checkin';
   const date = ref(new Date())
@@ -130,6 +132,7 @@
     checkIn: "", 
     brb: ""
   })
+  const items = ref([])
 
   const promoText = {
     title: 'Check-In/Brb',
@@ -150,7 +153,7 @@
     console.log("docId.checkIn.value: ", docId.value.checkIn)
     if(docId.value.checkIn !== "" && isChechin.value === false){
       // get data by ID
-      const docRef  = await doc(db, TABLE_NAME, docId.value)
+      const docRef  = await doc(db, TABLE_NAME, docId.value.checkIn)
       const docSnap = await getDoc(docRef);
       if (docSnap.exists()) {
         console.log("docRef CHECKIN :: ", docSnap.data());
@@ -163,8 +166,14 @@
         tenant: 'lexart',
         timeBrb: null,
         timeCheckin: +new Date(),
-        username: usr.value?.displayName
+        username: usr.value?.displayName,
+        _rawDate: new Date()
       });
+
+      // store ID in docId value
+      isSavingCheckIn.value = false
+      isChechin.value       = true
+      date.value            = new Date()
     }
     if(isChechin.value === false && !isEditDoc){
       isSavingCheckIn.value = true
@@ -175,7 +184,8 @@
         tenant: 'lexart',
         timeBrb: null,
         timeCheckin: +new Date(),
-        username: usr.value?.displayName
+        username: usr.value?.displayName,
+        _rawDate: new Date()
       });
       console.log("CHECKIN: Document written with ID: ", docRef.id);
       // store ID in docId value
@@ -184,6 +194,7 @@
       isChechin.value       = true
       date.value            = new Date()
     }
+    await runner()
   }
 
   const doBrb = async function (){
@@ -202,22 +213,46 @@
         tenant: 'lexart',
         timeBrb: +new Date(),
         timeCheckin: null,
-        username: usr.value?.displayName
+        username: usr.value?.displayName,
+        _rawDate: new Date()
       });
       isSavingBrb.value = false
       isChechin.value   = false
     }
+
+    await runner()
   }
 
   // Get all active users
-  async function getActiveUsers (){
+  async function getMyStatus(user){
+    const activeUsersFilter = await utils.activeUsersToday("checkin", {
+      uniqueProp: 'email',
+      condChain: (a, b) => {
+        return a.email == b.email
+      }
+    }, {email: usr.value.email})
 
+    return activeUsersFilter.users.length > 0 ? activeUsersFilter.users[0] : false
   }
   // Runner
   async function runner () {
     const fbUser = await getCurrentUser()
     usr.value   = {...fbUser}
     console.log("currentUser: ", usr)
+    const myStatus = await getMyStatus(usr)
+    if(myStatus){
+      isChechin.value     = myStatus.isCheckIn
+      date.value          = isChechin.value ? new Date(myStatus.checkin) : new Date(myStatus.brb)
+      docId.value.checkIn = myStatus.docId
+    }
+    console.log("myStatus: ", myStatus)
+    // Only active users 
+    let activeCheckins = await utils.activeUsersToday("checkin", {
+      uniqueProp: 'email',
+      condChain: () => true
+    })
+    activeCheckins = activeCheckins.users.filter( item => item.isCheckIn)
+    activeUsers.value = (activeCheckins.length).toString()
   }
   runner()
 

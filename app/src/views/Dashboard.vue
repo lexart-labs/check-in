@@ -59,32 +59,18 @@
   <script setup>
 
   import { ref } from 'vue';
-  const items = ref([
-            {
-              name: 'Alex Casadevall',
-              email: 'alex@lexartlabs.xyz',
-              isCheckIn: true,
-            },
-            {
-              name: 'Rodrigo Trivel',
-              email: 'rodrigo@lexartlabs.xyz',
-              isCheckIn: false,
-            },
-            {
-              name: 'Leonel Izemendi',
-              email: 'leonel@lexartlabs.xyz',
-              isCheckIn: true,
-            },
-            {
-              name: 'Flavio Saco',
-              email: 'flavio@lexartlabs.xyz',
-              isCheckIn: true,
-            },
-            {
-              name: 'Nicolas Machado',
-              email: 'nicolas@lexartlabs.xyz',
-              isCheckIn: false,
-            },
-          ])
-    const search = ref('')
+  import { db } from '@/main';
+  import { useCollection } from 'vuefire';
+  import { collection, getDocs } from "firebase/firestore";
+  import lodash from 'lodash';
+  import utils from '@/utils';
+
+  const items = ref([])
+  const search = ref('')
+
+  async function runner (){
+    items.value = (await utils.activeUsersToday('checkin', {uniqueProp: 'email', condChain: () => true }, true)).users
+  }
+  runner()
+  
   </script>
