@@ -1,6 +1,7 @@
 // Composables
 import { createRouter, createWebHistory } from 'vue-router'
-import { getCurrentUser } from 'vuefire'
+import { getCurrentUser } from 'vuefire';
+import { getAuth, signOut } from 'firebase/auth';
 
 const routes = [
   {
@@ -40,7 +41,7 @@ const routes = [
         path: '',
         name: 'Dashboard',
         component: () => import('@/views/Dashboard.vue'),
-        meta: { requiresAuth: true }
+        meta: { requiresAuth: true, isAdmin: true }
       },
     ],
   },
@@ -55,9 +56,22 @@ router.beforeEach(async (to) => {
   const currentUser = await getCurrentUser()
   // routes with `meta: { requiresAuth: true }` will check for
   // the users, others won't
-  if (to.meta.requiresAuth) {
+  if (to.meta.requiresAuth && !to.meta.isAdmin) {
     // if the user is not logged in, redirect to the login page
     if (!currentUser) {
+      return {
+        path: '/'
+      }
+    }
+  } else if (to.meta.requiresAuth && to.meta.isAdmin){
+    console.log("to.meta.isAdmin: ", to.meta.isAdmin)
+    let isAdmin = false
+    if(currentUser?.reloadUserInfo?.customAttributes){
+      isAdmin = (JSON.parse(currentUser?.reloadUserInfo?.customAttributes))?.admin
+    }
+    if (!currentUser || isAdmin === false) {
+      const auth = await getAuth()
+      await signOut(auth)
       return {
         path: '/'
       }

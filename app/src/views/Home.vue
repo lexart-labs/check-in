@@ -110,6 +110,18 @@
         >
           brb
         </v-btn>
+
+        <v-btn
+          border
+          v-if="isAdminUser"
+          class="me-2 text-none"
+          color="blue"
+          prepend-icon="mdi-view-dashboard"
+          variant="flat"
+          @click="goTo('/dashboard')"
+        >
+          Dashboard
+        </v-btn>
       </div>
     </v-card>
   </v-card>
@@ -120,14 +132,15 @@
   import { getCurrentUser } from 'vuefire';
   import { db } from '@/main';
   import { collection, addDoc, doc, getDoc, setDoc, getDocs } from "firebase/firestore";
-  import lodash from 'lodash';
   import utils from '@/utils'
+  import router from '@/router';
 
   const TABLE_NAME = 'checkin';
   const date = ref(new Date())
   const isChechin = ref(false)
   const isSavingCheckIn = ref(false)
   const isSavingBrb     = ref(false)
+  const isAdminUser     = ref(false)
   const docId           = ref({
     checkIn: "", 
     brb: ""
@@ -147,6 +160,10 @@
     displayName: ''
   })
   const activeUsers = ref("0")
+
+  function goTo(route){
+    router.push(route)
+  }
 
   const doCheckIn = async function (){
     let isEditDoc = false
@@ -238,6 +255,13 @@
   async function runner () {
     const fbUser = await getCurrentUser()
     usr.value   = {...fbUser}
+
+    try {
+      const adminUser = JSON.parse(usr.value?.reloadUserInfo?.customAttributes)
+      isAdminUser.value = adminUser.admin ? adminUser.admin : false
+    } catch (e){
+      console.log("error admin :: ", e)
+    }
     console.log("currentUser: ", usr)
     const myStatus = await getMyStatus(usr)
     if(myStatus){

@@ -4,7 +4,8 @@
 
         <v-navigation-drawer permanent theme="dark">
             <v-list>
-                <v-list-item title="Logout"></v-list-item>
+                <v-list-item title="CheckIn/Brb" @click="goTo('/check-in')"></v-list-item>
+                <v-list-item title="Logout" @click="logOut"></v-list-item>
             </v-list>
         </v-navigation-drawer>
 
@@ -59,14 +60,24 @@
   <script setup>
 
   import { ref } from 'vue';
-  import { db } from '@/main';
-  import { useCollection } from 'vuefire';
-  import { collection, getDocs } from "firebase/firestore";
-  import lodash from 'lodash';
   import utils from '@/utils';
+  import router from '@/router';
+    import {
+      getAuth,
+      signOut
+    } from 'firebase/auth';
 
   const items = ref([])
   const search = ref('')
+
+  async function logOut(){
+      const auth = await getAuth()
+      await signOut(auth)
+      router.push('/')
+  }
+  function goTo(route){
+    router.push(route)
+  }
 
   async function runner (){
     items.value = (await utils.activeUsersToday('checkin', {uniqueProp: 'email', condChain: () => true }, true)).users
