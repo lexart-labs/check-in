@@ -24,7 +24,7 @@ const admin = require('firebase-admin');
 
 admin.initializeApp();
 
-const ADMIN_USERS = ['alex@lexartlabs.xyz', 'rodrigo@lexartlabs.xyz', 'nicolas@lexartlabs.xyz', 'virginia@lexartlabs.xyz', 'flavio@lexartlabs.xyz', 'leonel@lexartlabs.xyz']
+const ADMIN_USERS = ['alex@lexartlabs.xyz', 'rodrigo@lexartlabs.xyz', 'nicolas@lexartlabs.xyz', 'virginia@lexartlabs.xyz', 'flavio@lexartlabs.xyz', 'leonel@lexartlabs.xyz', 'federico.sanchez@lexartlabs.xyz']
 
 exports.convertadmin = functions.auth.user().onCreate((user) => {
   // Comprueba si el usuario se autenticó con Google
