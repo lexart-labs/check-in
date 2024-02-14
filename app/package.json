@@ -6,7 +6,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "lint": "eslint . --fix --ignore-path .gitignore"
+    "lint": "eslint . --fix --ignore-path .gitignore",
+    "docker": "cd ./dist && http-server -p 8080 -c-1"
   },
   "dependencies": {
     "@mdi/font": "7.0.96",
@@ -16,6 +17,7 @@
     "roboto-fontface": "*",
     "vue": "^3.2.0",
     "vue-router": "^4.0.0",
+    "vue-toast-notification": "^3.1.2",
     "vuefire": "^3.1.22",
     "vuetify": "^3.0.0"
   },

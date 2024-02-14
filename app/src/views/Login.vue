@@ -20,21 +20,35 @@
     import {
       signInWithPopup,
       GoogleAuthProvider,
+      signOut,
+      getAuth
     } from 'firebase/auth'
     import { useCurrentUser, useFirebaseAuth } from 'vuefire'
     import router from '../router'
+    import { EMAIL_PREFIX } from '@/main'
+    import {useToast} from 'vue-toast-notification'
+    import 'vue-toast-notification/dist/theme-sugar.css'
+
   
     const googleAuthProvider = new GoogleAuthProvider()
     const auth = useFirebaseAuth() // only exists on client side
     const error = {}
   
-    function signinPopup() {
+    async function signinPopup() {
       error.value = null
-      signInWithPopup(auth, googleAuthProvider).then((response) => {
+      signInWithPopup(auth, googleAuthProvider).then(async (response) => {
           console.log("response: ", response)
-          if(response){
-            console.log("Programatic redirect :: ")
+          if(response.user?.email.includes(EMAIL_PREFIX)){
             router.push('/check-in')
+          } else {
+            // do logout
+            const auth = await getAuth()
+
+            const $toast = useToast();
+            let instance = $toast.error('Email not allowed in this tenant.');
+
+            await signOut(auth)
+            router.push('/')
           }
       }).catch((reason) => {
         console.error('Failed sign', reason)
@@ -46,7 +60,7 @@
       const currentUser = useCurrentUser()
       console.log("currentUser: ", currentUser.value)
       if(currentUser.value !== null){
-        router.push('/')
+        router.push('/check-in')
         return
       }
     }, 50)

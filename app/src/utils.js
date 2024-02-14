@@ -45,6 +45,12 @@ const utils = {
     
         items = lodash.uniqBy(itemsNew, FILTER_OBJECT.uniqueProp)
         return {users: items, count: items.length}
+    },
+    clearIntervallAll: function (){
+      for (let i = 1; i < 99999; i++) {
+        window.clearInterval(i);
+      }
+      console.log("top: ", top, "clear ticker")
     }
 }
 export default utils;

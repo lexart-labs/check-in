@@ -66,6 +66,7 @@
       getAuth,
       signOut
     } from 'firebase/auth';
+import { TICKER_TIME } from '@/main';
 
   const items = ref([])
   const search = ref('')
@@ -76,6 +77,7 @@
       router.push('/')
   }
   function goTo(route){
+    utils.clearIntervallAll()
     router.push(route)
   }
 
@@ -83,5 +85,12 @@
     items.value = (await utils.activeUsersToday('checkin', {uniqueProp: 'email', condChain: () => true }, true)).users
   }
   runner()
+
+  let i = 1
+  window.INTERVAL_INT = setInterval( async () => {
+    console.log("runner >> ", i)
+    runner()
+    i++
+  }, TICKER_TIME)
   
   </script>

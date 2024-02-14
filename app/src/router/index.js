@@ -60,7 +60,7 @@ router.beforeEach(async (to) => {
     // if the user is not logged in, redirect to the login page
     if (!currentUser) {
       return {
-        path: '/'
+        path: '/check-in'
       }
     }
   } else if (to.meta.requiresAuth && to.meta.isAdmin){

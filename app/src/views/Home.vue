@@ -130,7 +130,8 @@
 <script setup>
   import { ref } from 'vue';
   import { getCurrentUser } from 'vuefire';
-  import { db } from '@/main';
+  import { EMAIL_PREFIX, db } from '@/main';
+  import { signOut, getAuth } from 'firebase/auth'
   import { collection, addDoc, doc, getDoc, setDoc, getDocs } from "firebase/firestore";
   import utils from '@/utils'
   import router from '@/router';
@@ -146,6 +147,9 @@
     brb: ""
   })
   const items = ref([])
+
+  console.log("window.INTERVAL_INT: ", window.INTERVAL_INT)
+  // clear
 
   const promoText = {
     title: 'Check-In/Brb',
@@ -263,6 +267,14 @@
       console.log("error admin :: ", e)
     }
     console.log("currentUser: ", usr)
+    
+    // if not whitelist email
+    if(!usr.value?.email.includes(EMAIL_PREFIX)){
+      const auth = await getAuth()
+      await signOut(auth)
+      router.push('/')
+    }
+
     const myStatus = await getMyStatus(usr)
     if(myStatus){
       isChechin.value     = myStatus.isCheckIn
@@ -277,6 +289,7 @@
     })
     activeCheckins = activeCheckins.users.filter( item => item.isCheckIn)
     activeUsers.value = (activeCheckins.length).toString()
+    utils.clearIntervallAll()
   }
   runner()
 
