@@ -28,6 +28,7 @@
     import { EMAIL_PREFIX } from '@/main'
     import {useToast} from 'vue-toast-notification'
     import 'vue-toast-notification/dist/theme-sugar.css'
+    import utils from '@/utils'
 
   
     const googleAuthProvider = new GoogleAuthProvider()
@@ -59,6 +60,7 @@
     setTimeout( () => {
       const currentUser = useCurrentUser()
       console.log("currentUser: ", currentUser.value)
+      utils.clearIntervallAll()
       if(currentUser.value !== null){
         router.push('/check-in')
         return
