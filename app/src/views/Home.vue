@@ -113,6 +113,18 @@
 
         <v-btn
           border
+          v-if="!isAdminUser"
+          class="me-2 text-none"
+          color="red"
+          prepend-icon="mdi-logout"
+          variant="flat"
+          @click="doLogout"
+        >
+          Logout
+        </v-btn>
+
+        <v-btn
+          border
           v-if="isAdminUser"
           class="me-2 text-none"
           color="blue"
@@ -242,6 +254,16 @@
     }
 
     await runner()
+  }
+
+  // Set user status to brb and logout if not admin
+  const doLogout = async function (){
+    if(!isAdminUser.value){
+      await doBrb()
+      const auth = await getAuth()
+      await signOut(auth)
+      router.push('/')
+    }
   }
 
   // Get all active users
