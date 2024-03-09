@@ -140,7 +140,7 @@
 </template>
 
 <script setup>
-  import { ref, onMounted } from 'vue';
+  import { ref } from 'vue';
   import { getCurrentUser } from 'vuefire';
   import { EMAIL_PREFIX, db } from '@/main';
   import { signOut, getAuth } from 'firebase/auth'
@@ -278,21 +278,6 @@
     return activeUsersFilter.users.length > 0 ? activeUsersFilter.users[0] : false
   }
 
-  // //onMounted do checkin if sessionStorage.getItem('justLoggedIn') === 'true')
-  // onMounted(async () => {
-  //   console.log(sessionStorage.getItem('justLoggedIn'))
-  //   try {
-  //     if (sessionStorage.getItem('justLoggedIn') === 'true') {
-  //       await runner()
-  //       await doCheckIn()
-  //       // Clear the flag
-  //       sessionStorage.removeItem('justLoggedIn');
-  //     }
-  //   } catch (error) {
-  //     console.error("Error in onMounted hook: ", error);
-  //   }
-  // });
-
   // Runner
   async function runner () {
     const fbUser = await getCurrentUser()
@@ -328,7 +313,7 @@
     activeCheckins = activeCheckins.users.filter( item => item.isCheckIn)
     activeUsers.value = (activeCheckins.length).toString()
     utils.clearIntervallAll()
-
+    
     //Do checkin if just logged in
     try {
       if (sessionStorage.getItem('justLoggedIn') === 'true') {
