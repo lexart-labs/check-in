@@ -40,6 +40,8 @@
       signInWithPopup(auth, googleAuthProvider).then(async (response) => {
           console.log("response: ", response)
           if(response.user?.email.includes(EMAIL_PREFIX)){
+            // Set a flag to check if the user just logged in
+            sessionStorage.setItem('justLoggedIn', 'true');
             router.push('/check-in')
           } else {
             // do logout
