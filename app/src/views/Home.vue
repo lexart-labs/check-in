@@ -111,17 +111,12 @@
           brb
         </v-btn>
 
-        <v-btn
-          border
-          v-if="!isAdminUser"
-          class="me-2 text-none"
-          color="red"
-          prepend-icon="mdi-logout"
-          variant="flat"
-          @click="doLogout"
+        <LogoutButton
+          :isAdminUser="isAdminUser"
+          :doLogout="() => doLogout(isAdminUser, doBrb, getAuth, signOut, router)"
         >
           Logout
-        </v-btn>
+        </LogoutButton>
 
         <v-btn
           border
@@ -147,6 +142,9 @@
   import { collection, addDoc, doc, getDoc, setDoc, getDocs } from "firebase/firestore";
   import utils from '@/utils'
   import router from '@/router';
+  import { doCheckInIfJustLoggedIn } from '@/helpers/onLoginAction';
+  import { doLogout } from '@/helpers/doLogoutFunction';
+  import LogoutButton from '@/components/LogoutButton.vue'
 
   const TABLE_NAME = 'checkin';
   const date = ref(new Date())
@@ -256,16 +254,6 @@
     await runner()
   }
 
-  // Set user status to brb and logout if not admin
-  const doLogout = async function (){
-    if(!isAdminUser.value){
-      await doBrb()
-      const auth = await getAuth()
-      await signOut(auth)
-      router.push('/')
-    }
-  }
-
   // Get all active users
   async function getMyStatus(user){
     const activeUsersFilter = await utils.activeUsersToday("checkin", {
@@ -315,14 +303,7 @@
     utils.clearIntervallAll()
     
     //Do checkin if just logged in
-    try {
-      if (sessionStorage.getItem('justLoggedIn') === 'true') {
-        sessionStorage.removeItem('justLoggedIn');
-        await doCheckIn()
-      }
-    } catch (error) {
-      console.error("Error in doCheckIn: ", error);
-    }
+    await doCheckInIfJustLoggedIn(doCheckIn);
   }
   runner()
 

@@ -29,6 +29,7 @@
     import {useToast} from 'vue-toast-notification'
     import 'vue-toast-notification/dist/theme-sugar.css'
     import utils from '@/utils'
+    import { setFlagJustLoggedIn } from '@/helpers/onLoginAction'
 
   
     const googleAuthProvider = new GoogleAuthProvider()
@@ -41,7 +42,7 @@
           console.log("response: ", response)
           if(response.user?.email.includes(EMAIL_PREFIX)){
             // Set a flag to check if the user just logged in
-            sessionStorage.setItem('justLoggedIn', 'true');
+            setFlagJustLoggedIn()
             router.push('/check-in')
           } else {
             // do logout
