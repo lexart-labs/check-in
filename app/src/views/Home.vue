@@ -114,9 +114,7 @@
         <LogoutButton
           :isAdminUser="isAdminUser"
           :doLogout="() => doLogout(isAdminUser, doBrb, getAuth, signOut, router)"
-        >
-          Logout
-        </LogoutButton>
+        />
 
         <v-btn
           border
