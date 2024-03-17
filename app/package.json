@@ -2,11 +2,13 @@
   "name": "app",
   "version": "0.0.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint . --fix --ignore-path .gitignore",
+    "test": "mocha --require mock-local-storage",
     "docker": "cd ./dist && http-server -p 8080 -c-1"
   },
   "dependencies": {
@@ -23,9 +25,13 @@
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^4.0.0",
+    "chai": "^5.1.0",
     "eslint": "^8.37.0",
     "eslint-plugin-vue": "^9.3.0",
+    "mocha": "^10.3.0",
+    "mock-local-storage": "^1.1.24",
     "sass": "^1.60.0",
+    "sinon": "^17.0.1",
     "unplugin-fonts": "^1.0.3",
     "vite": "^4.2.0",
     "vite-plugin-vuetify": "^1.0.0"

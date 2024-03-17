@@ -29,7 +29,6 @@
     import {useToast} from 'vue-toast-notification'
     import 'vue-toast-notification/dist/theme-sugar.css'
     import utils from '@/utils'
-
   
     const googleAuthProvider = new GoogleAuthProvider()
     const auth = useFirebaseAuth() // only exists on client side
@@ -40,6 +39,8 @@
       signInWithPopup(auth, googleAuthProvider).then(async (response) => {
           console.log("response: ", response)
           if(response.user?.email.includes(EMAIL_PREFIX)){
+            // Set a flag to check if the user just logged in
+            sessionStorage.setItem('justLoggedIn', 'true');
             router.push('/check-in')
           } else {
             // do logout

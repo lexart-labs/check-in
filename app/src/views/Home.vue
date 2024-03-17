@@ -111,6 +111,11 @@
           brb
         </v-btn>
 
+        <LogoutButton
+          :isAdminUser="isAdminUser"
+          :doLogout="() => doLogout(isAdminUser, doBrb, getAuth, signOut, router)"
+        />
+
         <v-btn
           border
           v-if="isAdminUser"
@@ -135,6 +140,9 @@
   import { collection, addDoc, doc, getDoc, setDoc, getDocs } from "firebase/firestore";
   import utils from '@/utils'
   import router from '@/router';
+  import { doCheckInIfJustLoggedIn } from '@/helpers/onLoginAction';
+  import { doLogout } from '@/helpers/doLogoutFunction';
+  import LogoutButton from '@/components/LogoutButton.vue'
 
   const TABLE_NAME = 'checkin';
   const date = ref(new Date())
@@ -255,6 +263,7 @@
 
     return activeUsersFilter.users.length > 0 ? activeUsersFilter.users[0] : false
   }
+
   // Runner
   async function runner () {
     const fbUser = await getCurrentUser()
@@ -290,6 +299,9 @@
     activeCheckins = activeCheckins.users.filter( item => item.isCheckIn)
     activeUsers.value = (activeCheckins.length).toString()
     utils.clearIntervallAll()
+    
+    //Do checkin if just logged in
+    await doCheckInIfJustLoggedIn(doCheckIn);
   }
   runner()
 
