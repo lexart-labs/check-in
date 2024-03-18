@@ -12,7 +12,6 @@ const logger = require("firebase-functions/logger");
 require('dotenv').config();
 
 const ADMIN_USERS = process.env.ADMIN_USERS.split(',');
-const LEADS_USERS = process.env.LEADS_USERS.split(',');
 
 // Create and deploy your first functions
 // https://firebase.google.com/docs/functions/get-started
