@@ -4,7 +4,7 @@
         <transition >
           <div v-show="modalActive" class="modal">
               <v-card 
-                  class="mx-auto check-in--card rounded-xl pa-4"
+                  class="mx-auto check-in--card pa-4"
                   color="#36393f"
                   theme="dark"
                   width="820"
