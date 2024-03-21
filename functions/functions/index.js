@@ -9,6 +9,9 @@
 
 const {onRequest} = require("firebase-functions/v2/https");
 const logger = require("firebase-functions/logger");
+require('dotenv').config();
+
+const ADMIN_USERS = process.env.ADMIN_USERS.split(',');
 
 // Create and deploy your first functions
 // https://firebase.google.com/docs/functions/get-started
@@ -24,7 +27,6 @@ const admin = require('firebase-admin');
 
 admin.initializeApp();
 
-const ADMIN_USERS = ['alex@lexartlabs.xyz', 'rodrigo@lexartlabs.xyz', 'nicolas@lexartlabs.xyz', 'virginia@lexartlabs.xyz', 'flavio@lexartlabs.xyz', 'leonel@lexartlabs.xyz', 'federico.sanchez@lexartlabs.xyz']
 
 exports.convertadmin = functions.auth.user().onCreate((user) => {
   // Comprueba si el usuario se autenticó con Google
