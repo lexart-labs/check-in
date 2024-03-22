@@ -43,7 +43,7 @@
                       class="text-uppercase"
                       label
                       size="small"
-                      @click="doChange(item)"
+                      @click="openModal(item)"
                       ></v-btn>
                   </div>
               </template>
@@ -96,7 +96,7 @@
                 text="Send"
                 size="small"
                 class="mx-2"
-                @click="statusChanged"
+                @click="makeChange"
                 >
                 </v-btn>
                 </div>
@@ -112,19 +112,16 @@
 import { ref } from 'vue';
 import utils from '@/utils';
 import router from '@/router';
-import {db} from '@/main'
   import {
     getAuth,
     signOut
   } from 'firebase/auth';
 import { TICKER_TIME } from '@/main';
-import {doc,setDoc,addDoc,collection,getDocs } from "firebase/firestore";
-import { getCurrentUser } from 'vuefire';
+import { statusChanged } from '@/helpers/statusChanged';
 
 const items = ref([])
 const search = ref('')
 const TABLE_NAME = 'checkin';
-const TABLE_NAME_CHANGED_CHECKIN ='changedCheckin'
 const reason = ref('')
 const modalActive = ref(false);
 const modalUser = ref('');
@@ -141,7 +138,6 @@ function goTo(route){
 
 async function runner (){
   items.value = (await utils.activeUsersToday('checkin', {uniqueProp: 'email', condChain: () => true }, true)).users
-  console.log(items.value)
 }
 runner()
 
@@ -152,59 +148,14 @@ window.INTERVAL_INT = setInterval( async () => {
   i++
 }, TICKER_TIME)
 
-async function sendReason(){
-const user = modalUser.value
-const adm = await getCurrentUser()
-const docRef = collection(db,TABLE_NAME_CHANGED_CHECKIN)
-const docSnap = await getDocs(docRef);
-let exist = false;
-let docId = null;
-docSnap.docs.forEach((i)=>{
-  let item = i.data()
-  if(item.devEmail===user.email){
-    exist = true
-    docId = i.id
-  }
-})
-const newDoc = {
-  date: +new Date(),
-  admEmail:adm.email,
-  admName:adm.displayName,
-  devName:user.name,
-  devEmail:user.email,
-  reason:reason.value,
-  _rawDate: new Date()
-}
-if(exist){
-  const docUser = await doc(db,TABLE_NAME_CHANGED_CHECKIN,docId)
-  await setDoc(docUser, {...newDoc});
-}else{
-  await addDoc(collection(db,TABLE_NAME_CHANGED_CHECKIN),{...newDoc})
-}
-reason.value = ''
-modalUser.value=''
-}
-
-async function statusChanged(){
-  const user = modalUser.value
-  console.log(user)
-  const docRef  = await doc(db, TABLE_NAME, user.docId)
-  await setDoc(docRef, {
-  date: +new Date(),
-  email: user.email,
-  isOtpValid: true,
-  tenant: 'lexart',
-  timeBrb: user.isCheckIn? +new Date():null,
-  timeCheckin:  user.isCheckIn? null:+new Date(),
-  username: user.name,
-  _rawDate: new Date()
-  });
-  await sendReason();
-  modalActive.value=false
+async function makeChange(){
+  await statusChanged(modalUser.value,TABLE_NAME,reason.value);
+  modalActive.value =false;
+  reason.value = ''
   runner()
 }
 
-function doChange(user){
+function openModal(user){
   modalUser.value = {...user}
   modalActive.value = true;
 }
