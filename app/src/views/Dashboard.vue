@@ -48,58 +48,46 @@
                   </div>
               </template>
           </v-data-table>
-           <v-dialog v-model="modalActive"
-           :style="{ marginLeft: '260px' }">
+           <v-dialog v-model="modalActive">
               <template v-slot:default>
                 <v-card
-                class="check-in--card mx-auto"
-                color="#36393f"
-                width="820"
-                height="320"
-                theme="dark"
-                variant="flat">
-                  <v-card-title class="d-flex align-center justify-center pe-2 my-2">
-                    You want to change the user
-                    &nbsp;
-                    <span :style="{color:'#0096c7'}">
-                      {{ modalUser.name }}
-                    </span>
-                    &nbsp;
-                    status from
-                    &nbsp;
-                    <span :style="{color: modalUser.isCheckIn ? '#08be35' : '#f19807'}">
-                      {{ modalUser.isCheckIn ? 'CHECKIN' : 'BRB' }}
-                    </span>
-                    &nbsp;
-                    to 
-                    &nbsp;
-                    <span :style="{color: modalUser.isCheckIn ? '#f19807' : '#08be35'}">
-                      {{ modalUser.isCheckIn ? 'BRB' : 'CHECKIN' }}
-                    </span>?
-                </v-card-title>
-              <v-textarea
-                  label="Reason"
-                  v-model="reason"
-                  hide-details
-                  width="600"
-                  class="mx-auto w-75 "
-                  variant="solo-filled">
-                </v-textarea>
-                <div class="d-flex justify-end pa-2">
-                  <v-btn
-                text="close"
-                size="small"
-                class="mx-2"
-                @click="modalActive = false"
-                ></v-btn>
-                <v-btn
-                text="Send"
-                size="small"
-                class="mx-2"
-                @click="makeChange"
-                >
-                </v-btn>
-                </div>
+                  class="mx-auto"
+                  color="#36393f"
+                  theme="dark"
+                  variant="flat">
+                  <v-card-title class="d-flex align-center justify-center my-2">
+                    <p>
+                      Change <span :style="{color:'#0096c7'}">
+                        {{ modalUser.email }}
+                      </span> from <span :style="{color: modalUser.isCheckIn ? '#08be35' : '#f19807'}">
+                        {{ modalUser.isCheckIn ? 'CHECKIN' : 'BRB' }}
+                      </span> to <span :style="{color: modalUser.isCheckIn ? '#f19807' : '#08be35'}">
+                        {{ modalUser.isCheckIn ? 'BRB' : 'CHECKIN' }}
+                      </span>
+                    </p>
+                  </v-card-title>
+                  <v-card-text>
+                    <v-textarea
+                      label="Reason"
+                      v-model="reason"
+                      hide-details
+                      class="mx-auto"
+                      variant="solo-filled">
+                    </v-textarea>
+                  </v-card-text>
+                  <v-card-actions class="align-right">
+                    <v-btn
+                      text="Close"
+                      class="mx-2"
+                      @click="modalActive = false"
+                    ></v-btn>
+                    <v-btn
+                      text="Send"
+                      class="mx-2"
+                      @click="makeChange"
+                    >
+                    </v-btn>
+                  </v-card-actions>
                 </v-card>
               </template>
               </v-dialog>
