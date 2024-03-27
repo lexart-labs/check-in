@@ -84,6 +84,7 @@
                     <v-btn
                       text="Send"
                       class="mx-2"
+                      :disabled="reason == ''"
                       @click="makeChange"
                     >
                     </v-btn>
