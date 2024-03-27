@@ -1,10 +1,7 @@
-import {doc,setDoc,addDoc,collection,getDocs } from "firebase/firestore";
-import { getCurrentUser } from 'vuefire';
-import {db} from '@/main'
-
 const TABLE_NAME_CHANGED_CHECKIN ='changedCheckin'
 
-async function sendReason(user,reason){
+export async function sendReason(user,reason,db,firebaseFunctions){
+    const {getCurrentUser,collection,getDocs,doc,setDoc,addDoc} = firebaseFunctions
     const adm = await getCurrentUser()
     const docRef = collection(db,TABLE_NAME_CHANGED_CHECKIN)
     const docSnap = await getDocs(docRef);
@@ -31,10 +28,12 @@ async function sendReason(user,reason){
       await setDoc(docUser, {...newDoc});
     }else{
       await addDoc(collection(db,TABLE_NAME_CHANGED_CHECKIN),{...newDoc})
+
     }
 }
 
-export async function statusChanged(user,TABLE_NAME,reason){
+export async function statusChanged(user,TABLE_NAME,db,firebaseFunctions){
+    const {doc,setDoc} = firebaseFunctions
     const docRef  = doc(db, TABLE_NAME, user.docId)
     await setDoc(docRef, {
     date: +new Date(),
@@ -46,6 +45,5 @@ export async function statusChanged(user,TABLE_NAME,reason){
     username: user.name,
     _rawDate: new Date()
     });
-    await sendReason(user,reason);
 }
 

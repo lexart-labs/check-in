@@ -117,7 +117,10 @@ import router from '@/router';
     signOut
   } from 'firebase/auth';
 import { TICKER_TIME } from '@/main';
-import { statusChanged } from '@/helpers/statusChanged';
+import { statusChanged,sendReason } from '@/helpers/statusChanged';
+import {db} from '@/main'
+import {doc,setDoc,addDoc,collection,getDocs } from "firebase/firestore";
+import { getCurrentUser } from 'vuefire';
 
 const items = ref([])
 const search = ref('')
@@ -149,7 +152,10 @@ window.INTERVAL_INT = setInterval( async () => {
 }, TICKER_TIME)
 
 async function makeChange(){
-  await statusChanged(modalUser.value,TABLE_NAME,reason.value);
+  const firebaseFunctions = {doc,setDoc,addDoc,collection,getDocs,getCurrentUser}
+  await statusChanged(modalUser.value,TABLE_NAME,db,firebaseFunctions);
+  await sendReason(modalUser.value,reason.value,db,firebaseFunctions);
+
   modalActive.value =false;
   reason.value = ''
   runner()

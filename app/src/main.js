@@ -24,7 +24,7 @@ export const firebaseApp = initializeApp(firebaseConfig)
 // used for the firestore refs
 export const db = getFirestore(firebaseApp)
 
-export const EMAIL_PREFIX = '@'
+export const EMAIL_PREFIX = 'lexartlabs.xyz'
 
 export const TICKER_TIME  = 30000
 
