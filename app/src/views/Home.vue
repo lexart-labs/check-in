@@ -9,7 +9,7 @@
   >
     <v-sheet color="#202225">
       <v-card-item>
-        <template 
+        <template
           v-slot:prepend
         >
           <v-card-title>
@@ -151,14 +151,12 @@
   const isSavingBrb     = ref(false)
   const isAdminUser     = ref(false)
   const docId           = ref({
-    checkIn: "", 
+    checkIn: "",
     brb: ""
   })
   const items = ref([])
 
-  console.log("window.INTERVAL_INT: ", window.INTERVAL_INT)
   // clear
-
   const promoText = {
     title: 'Check-In/Brb',
     desc: 'This software helps Lexart business and management to understand availability.'
@@ -179,13 +177,11 @@
 
   const doCheckIn = async function (){
     let isEditDoc = false
-    console.log("docId.checkIn.value: ", docId.value.checkIn)
     if(docId.value.checkIn !== "" && isChechin.value === false){
       // get data by ID
       const docRef  = await doc(db, TABLE_NAME, docId.value.checkIn)
       const docSnap = await getDoc(docRef);
       if (docSnap.exists()) {
-        console.log("docRef CHECKIN :: ", docSnap.data());
         isEditDoc = true
       }
       const docRefEdit = await setDoc(docRef, {
@@ -232,9 +228,6 @@
       // get data by ID
       const docRef  = await doc(db, TABLE_NAME, docId.value.checkIn)
       const docSnap = await getDoc(docRef);
-      if (docSnap.exists()) {
-        console.log("docRef CHECKIN :: ", docSnap.data());
-      }
       const docRefEdit = await setDoc(docRef, {
         date: +new Date(),
         email: usr.value?.email,
@@ -275,8 +268,7 @@
     } catch (e){
       console.log("error admin :: ", e)
     }
-    console.log("currentUser: ", usr)
-    
+
     // if not whitelist email
     if(!usr.value?.email.includes(EMAIL_PREFIX)){
       const auth = await getAuth()
@@ -290,8 +282,7 @@
       date.value          = isChechin.value ? new Date(myStatus.checkin) : new Date(myStatus.brb)
       docId.value.checkIn = myStatus.docId
     }
-    console.log("myStatus: ", myStatus)
-    // Only active users 
+    // Only active users
     let activeCheckins = await utils.activeUsersToday("checkin", {
       uniqueProp: 'email',
       condChain: () => true
@@ -299,7 +290,7 @@
     activeCheckins = activeCheckins.users.filter( item => item.isCheckIn)
     activeUsers.value = (activeCheckins.length).toString()
     utils.clearIntervallAll()
-    
+
     //Do checkin if just logged in
     await doCheckInIfJustLoggedIn(doCheckIn);
   }
