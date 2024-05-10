@@ -1,10 +1,10 @@
 <template>
     <v-container class="fill-height">
-      <v-responsive class="align-center text-center fill-height">  
+      <v-responsive class="align-center text-center fill-height">
         <div class="text-body-1 font-weight-light mb-n1" style="color: #fff;">Check-In/Brb</div>
-  
+
         <div class="py-4" />
-  
+
         <v-row class="d-flex align-center justify-center">
           <v-col>
             <v-btn class="btn-custom-login" x-large="true" prepend-icon="mdi-google" @click="signinPopup">
@@ -15,7 +15,7 @@
       </v-responsive>
     </v-container>
   </template>
-    
+
   <script setup>
     import {
       signInWithPopup,
@@ -29,11 +29,11 @@
     import {useToast} from 'vue-toast-notification'
     import 'vue-toast-notification/dist/theme-sugar.css'
     import utils from '@/utils'
-  
+
     const googleAuthProvider = new GoogleAuthProvider()
     const auth = useFirebaseAuth() // only exists on client side
     const error = {}
-  
+
     async function signinPopup() {
       error.value = null
       signInWithPopup(auth, googleAuthProvider).then(async (response) => {
@@ -57,10 +57,9 @@
         error.value = reason
       })
     }
-  
+
     setTimeout( () => {
       const currentUser = useCurrentUser()
-      console.log("currentUser: ", currentUser.value)
       utils.clearIntervallAll()
       if(currentUser.value !== null){
         router.push('/check-in')

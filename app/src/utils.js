@@ -1,5 +1,5 @@
 import { db } from "./main";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, query, where } from "firebase/firestore";
 import lodash from 'lodash';
 
 const utils = {
@@ -20,10 +20,13 @@ const utils = {
     */
     activeUsersToday: async function (TABLE_NAME, FILTER_OBJECT, OUTSIDE){
         const docRef = collection(db, TABLE_NAME);
-        const docSnap = await getDocs(docRef);
+        let startOfToday = new Date();
+        startOfToday.setHours(0,0,0,0);
+        const q      = query(docRef, where("_rawDate", ">", startOfToday));
+        const docSnap = await getDocs(q);
         let items = []
         const itemsNew = []
-    
+
         docSnap.docs.map( doc => {
           let item = doc.data()
           if(utils.isToday(new Date(item.date)) && FILTER_OBJECT.condChain(item, OUTSIDE) ){
@@ -40,9 +43,9 @@ const utils = {
             })
           }
         })
-        // Filter 
+        // Filter
         itemsNew.sort( (a, b) => new Date(b.date) - new Date(a.date) )
-    
+
         items = lodash.uniqBy(itemsNew, FILTER_OBJECT.uniqueProp)
         return {users: items, count: items.length}
     },
@@ -50,7 +53,6 @@ const utils = {
       for (let i = 1; i < 99999; i++) {
         window.clearInterval(i);
       }
-      console.log("top: ", top, "clear ticker")
     }
 }
 export default utils;

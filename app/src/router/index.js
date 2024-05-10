@@ -64,7 +64,6 @@ router.beforeEach(async (to) => {
       }
     }
   } else if (to.meta.requiresAuth && to.meta.isAdmin){
-    console.log("to.meta.isAdmin: ", to.meta.isAdmin)
     let isAdmin = false
     if(currentUser?.reloadUserInfo?.customAttributes){
       isAdmin = (JSON.parse(currentUser?.reloadUserInfo?.customAttributes))?.admin
