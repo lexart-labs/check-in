@@ -24,9 +24,9 @@ export const firebaseApp = initializeApp(firebaseConfig)
 // used for the firestore refs
 export const db = getFirestore(firebaseApp)
 
-export const EMAIL_PREFIX = 'lexartlabs.xyz'
+export const EMAIL_PREFIX = import.meta.env?.VITE_EMAIL_PREFIX ? import.meta.env?.VITE_EMAIL_PREFIX.split(',') : ['lexartlabs.xyz']
 
-export const TICKER_TIME  = 30000
+export const TICKER_TIME  = !isNaN(parseInt(import.meta.env?.VITE_TICKER_TIME)) ? parseInt(import.meta.env?.VITE_TICKER_TIME) : 40000
 
 const app = createApp(App)
 

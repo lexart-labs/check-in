@@ -270,7 +270,8 @@
     }
 
     // if not whitelist email
-    if(!usr.value?.email.includes(EMAIL_PREFIX)){
+    const emailDomain = usr.value?.email.split('@')[1];
+    if(!emailDomain || !EMAIL_PREFIX.includes(emailDomain)){
       const auth = await getAuth()
       await signOut(auth)
       router.push('/')

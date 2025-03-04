@@ -14,6 +14,7 @@
   "dependencies": {
     "@mdi/font": "7.0.96",
     "core-js": "^3.29.0",
+    "dotenv": "^16.4.7",
     "firebase": "^10.7.2",
     "lodash": "^4.17.21",
     "roboto-fontface": "*",
