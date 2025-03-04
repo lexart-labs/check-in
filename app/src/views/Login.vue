@@ -38,7 +38,10 @@
       error.value = null
       signInWithPopup(auth, googleAuthProvider).then(async (response) => {
           console.log("response: ", response)
-          if(response.user?.email.includes(EMAIL_PREFIX)){
+          // Extract domain from email
+          const emailDomain = response.user?.email.split('@')[1];
+          // Check if the domain is in the allowed domains array
+          if(emailDomain && EMAIL_PREFIX.includes(emailDomain)){
             // Set a flag to check if the user just logged in
             sessionStorage.setItem('justLoggedIn', 'true');
             router.push('/check-in')
