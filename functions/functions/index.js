@@ -36,7 +36,7 @@ exports.slackStatusWebhook = functions.https.onRequest(async (req, res) => {
       const challenge = req.body?.challenge;
 
       if (!event || event.type !== "presence_change") {
-          return res.status(400).send({response: "Evento no válido", challenge: challenge});
+          return res.status(200).send({response: "Evento no válido", challenge: challenge});
       }
 
       const { user, presence } = event;
