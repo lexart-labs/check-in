@@ -73,10 +73,36 @@ async function createCheckin(user) {
   };
 
   try {
-    await db.collection('checkin').add(checkinData);
-    console.log(`Check-in added for user ${user.real_name}`);
+    // Check if a record already exists for this user today
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Start of the day
+
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1); // Start of tomorrow
+
+    const querySnapshot = await db.collection('checkin')
+      .where('email', '==', user.profile.email)
+      .where('date', '>=', today.getTime())
+      .where('date', '<', tomorrow.getTime())
+      .get();
+
+    if (!querySnapshot.empty) {
+      // Update existing record
+      const docRef = querySnapshot.docs[0].ref;
+      await docRef.update({
+        _rawDate: rawDate,
+        date: currentDate.getTime(),
+        timeBrb: userPresence === 'away' ? currentDate.getTime() : null,
+        timeCheckin: userPresence === 'active' ? currentDate.getTime() : null
+      });
+      console.log(`Check-in updated for user ${user.real_name}`, userPresence, checkinData);
+    } else {
+      // Create new record
+      await db.collection('checkin').add(checkinData);
+      console.log(`New check-in added for user ${user.real_name}`, userPresence, checkinData);
+    }
   } catch (error) {
-    console.error('Error adding check-in to Firestore:', error);
+    console.error('Error managing check-in in Firestore:', error);
   }
 }
 
