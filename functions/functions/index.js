@@ -59,7 +59,7 @@ async function getAllUsers() {
 async function createCheckin(user) {
   const userPresence = await getPresence(user.id);
   const currentDate = new Date();
-  const rawDate = new Date(currentDate).toLocaleString("es-AR", { timeZone: "America/Argentina/Buenos_Aires" });
+  const rawDate = currentDate;
 
   const checkinData = {
     _rawDate: rawDate,
@@ -125,7 +125,7 @@ exports.convertadmin = functions.auth.user().onCreate((user) => {
   }
 });
 
-exports.checkSlackUsersPresence = functions.pubsub.schedule('*/5 * * * *').onRun(async (context) => {
+exports.checkSlackUsersPresence = functions.pubsub.schedule('0 * * * *').onRun(async (context) => {
   console.log('Running scheduled function ::');
 
   // Get all users from Slack
