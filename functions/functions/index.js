@@ -1,32 +1,15 @@
-/**
- * Import function triggers from their respective submodules:
- *
- * const {onCall} = require("firebase-functions/v2/https");
- * const {onDocumentWritten} = require("firebase-functions/v2/firestore");
- *
- * See a full list of supported triggers at https://firebase.google.com/docs/functions
- */
-
 const {onRequest} = require("firebase-functions/v2/https");
 const logger = require("firebase-functions/logger");
-require('dotenv').config();
-
-const ADMIN_USERS = process.env.ADMIN_USERS.split(',');
-
-// Create and deploy your first functions
-// https://firebase.google.com/docs/functions/get-started
-
-// exports.helloWorld = onRequest((request, response) => {
-//   logger.info("Hello logs!", {structuredData: true});
-//   response.send("Hello from Firebase!");
-// });
-
-
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
+const axios = require("axios");
+require('dotenv').config();
+
+const ADMIN_USERS     = process.env.ADMIN_USERS.split(',');
+const SLACK_BOT_TOKEN = process.env.SLACK_BOT_TOKEN;
 
 admin.initializeApp();
-
+const db = admin.firestore();
 
 exports.convertadmin = functions.auth.user().onCreate((user) => {
   // Comprueba si el usuario se autenticó con Google
@@ -44,5 +27,51 @@ exports.convertadmin = functions.auth.user().onCreate((user) => {
   } else {
     console.log('Usuario no autenticado con Google, no se convierte en administrador:', user.uid);
     return null;
+  }
+});
+
+exports.slackStatusWebhook = functions.https.onRequest(async (req, res) => {
+  try {
+      const event = req.body.event;
+
+      if (!event || event.type !== "presence_change") {
+          return res.status(400).send("Evento no válido");
+      }
+
+      const { user, presence } = event;
+      const slackUserInfo = await axios.get(`https://slack.com/api/users.info`, {
+          headers: { Authorization: `Bearer ${SLACK_BOT_TOKEN}` },
+          params: { user }
+      });
+
+      if (!slackUserInfo.data.ok) {
+          console.error("Error al obtener info del usuario:", slackUserInfo.data);
+          return res.status(500).send("Error al obtener info del usuario");
+      }
+
+      const { profile } = slackUserInfo.data.user;
+      const email = profile.email || "desconocido";
+      const username = profile.real_name || "Usuario sin nombre";
+
+      const timestamp = Date.now();
+      const formattedDate = new Date(timestamp).toLocaleString("es-AR", { timeZone: "America/Argentina/Buenos_Aires" });
+
+      const checkinData = {
+          _rawDate: formattedDate,
+          date: timestamp,
+          email: email,
+          isOtpValid: true,
+          tenant: "lexart",
+          timeBrb: presence === "away" ? timestamp : null,
+          timeCheckin: presence === "active" ? timestamp : null,
+          username: username
+      };
+
+      await db.collection("checkin").add(checkinData);
+
+      res.status(200).send("Check-in registrado");
+  } catch (error) {
+      console.error("Error procesando el evento:", error);
+      res.status(500).send("Error interno del servidor");
   }
 });
