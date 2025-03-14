@@ -99,7 +99,7 @@ exports.convertadmin = functions.auth.user().onCreate((user) => {
   }
 });
 
-exports.checkSlackUsersPresence = functions.pubsub.schedule('every 5 minutes').onRun(async (context) => {
+exports.checkSlackUsersPresence = functions.pubsub.schedule('*/5 * * * *').onRun(async (context) => {
   console.log('Running scheduled function ::');
 
   // Get all users from Slack
