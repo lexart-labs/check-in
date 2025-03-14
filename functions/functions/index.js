@@ -11,6 +11,31 @@ const SLACK_BOT_TOKEN = process.env.SLACK_BOT_TOKEN;
 admin.initializeApp();
 const db = admin.firestore();
 
+async function getPresence(userId) {
+  try {
+    // Realiza la solicitud a Slack para obtener la presencia del usuario
+    const response = await axios.get('https://slack.com/api/users.getPresence', {
+      params: {
+        user: userId
+      },
+      headers: {
+        Authorization: `Bearer ${SLACK_BOT_TOKEN}`
+      }
+    });
+
+    if (response.data.ok) {
+      // Si la solicitud fue exitosa, retorna el estado de presencia
+      return response.data.presence;  // 'active' o 'away'
+    } else {
+      console.error('Error al obtener la presencia:', response.data.error);
+      return null;
+    }
+  } catch (error) {
+    console.error('Error al hacer la solicitud a la API de Slack:', error);
+    return null;
+  }
+}
+
 exports.convertadmin = functions.auth.user().onCreate((user) => {
   // Comprueba si el usuario se autenticó con Google
   if (user.providerData.some(provider => provider.providerId === 'google.com') && ADMIN_USERS.includes(user.email)) {
@@ -35,15 +60,17 @@ exports.slackStatusWebhook = functions.https.onRequest(async (req, res) => {
       const event     = req.body?.event;
       const challenge = req.body?.challenge;
 
-      if (!event || event.type !== "presence_change") {
+      if (!event || event.type !== "user_change") {
           return res.status(200).send({response: "Evento no válido", challenge: challenge});
       }
 
-      const { user, presence } = event;
+      const { user } = event;
       const slackUserInfo = await axios.get(`https://slack.com/api/users.info`, {
           headers: { Authorization: `Bearer ${SLACK_BOT_TOKEN}` },
-          params: { user }
+          params: { user: user?.id }
       });
+
+      const presence = await getPresence(user?.id)
 
       if (!slackUserInfo.data.ok) {
           console.error("Error al obtener info del usuario:", slackUserInfo.data);
