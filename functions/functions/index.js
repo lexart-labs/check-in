@@ -36,6 +36,50 @@ async function getPresence(userId) {
   }
 }
 
+async function getAllUsers() {
+  try {
+    const response = await axios.get('https://slack.com/api/users.list', {
+      headers: {
+        Authorization: `Bearer ${SLACK_BOT_TOKEN}`,
+      },
+    });
+
+    if (response.data.ok) {
+      return response.data.members;  // Array of user objects
+    } else {
+      console.error('Error fetching users from Slack:', response.data.error);
+      return [];
+    }
+  } catch (error) {
+    console.error('Error making request to Slack API:', error);
+    return [];
+  }
+}
+
+async function createCheckin(user) {
+  const userPresence = await getPresence(user.id);
+  const currentDate = new Date();
+  const rawDate = new Date(currentDate).toLocaleString("es-AR", { timeZone: "America/Argentina/Buenos_Aires" });
+
+  const checkinData = {
+    _rawDate: rawDate,
+    date: currentDate.getTime(),
+    email: user.profile.email,
+    isOtpValid: true,  // Assuming OTP is valid, you can change this logic based on your needs
+    tenant: 'lexart',
+    timeBrb: userPresence === 'away' ? currentDate.getTime() : null,
+    timeCheckin: userPresence === 'active' ? currentDate.getTime() : null,
+    username: user.real_name,
+  };
+
+  try {
+    await db.collection('checkin').add(checkinData);
+    console.log(`Check-in added for user ${user.real_name}`);
+  } catch (error) {
+    console.error('Error adding check-in to Firestore:', error);
+  }
+}
+
 exports.convertadmin = functions.auth.user().onCreate((user) => {
   // Comprueba si el usuario se autenticó con Google
   if (user.providerData.some(provider => provider.providerId === 'google.com') && ADMIN_USERS.includes(user.email)) {
@@ -55,51 +99,19 @@ exports.convertadmin = functions.auth.user().onCreate((user) => {
   }
 });
 
-exports.slackStatusWebhook = functions.https.onRequest(async (req, res) => {
-  try {
-      const event     = req.body?.event;
-      const challenge = req.body?.challenge;
+exports.checkSlackUsersPresence = functions.pubsub.schedule('every 5 minutes').onRun(async (context) => {
+  console.log('Running scheduled function ::');
 
-      if (!event || event.type !== "user_change") {
-          return res.status(200).send({response: "Evento no válido", challenge: challenge});
-      }
+  // Get all users from Slack
+  const users = await getAllUsers();
 
-      const { user } = event;
-      const slackUserInfo = await axios.get(`https://slack.com/api/users.info`, {
-          headers: { Authorization: `Bearer ${SLACK_BOT_TOKEN}` },
-          params: { user: user?.id }
-      });
-
-      const presence = await getPresence(user?.id)
-
-      if (!slackUserInfo.data.ok) {
-          console.error("Error al obtener info del usuario:", slackUserInfo.data);
-          return res.status(500).send({response: "Error al obtener info del usuario", challenge: challenge});
-      }
-
-      const { profile } = slackUserInfo.data.user;
-      const email = profile.email || "desconocido";
-      const username = profile.real_name || "Usuario sin nombre";
-
-      const timestamp = Date.now();
-      const formattedDate = new Date(timestamp).toLocaleString("es-AR", { timeZone: "America/Argentina/Buenos_Aires" });
-
-      const checkinData = {
-          _rawDate: formattedDate,
-          date: timestamp,
-          email: email,
-          isOtpValid: true,
-          tenant: "lexart",
-          timeBrb: presence === "away" ? timestamp : null,
-          timeCheckin: presence === "active" ? timestamp : null,
-          username: username
-      };
-
-      await db.collection("checkin").add(checkinData);
-
-      res.status(200).send({response: "Check-in registrado", challenge: challenge});
-  } catch (error) {
-      console.error("Error procesando el evento:", error);
-      res.status(500).send({response: "Error interno del servidor", challenge: null});
+  // Loop through each user and perform the check-in logic
+  for (const user of users) {
+    if (!user.is_bot && user.profile?.email && user?.is_email_confirmed === true) {
+      // Do the check-in logic for active users
+      await createCheckin(user);
+    }
   }
+
+  console.log('Scheduled function completed ::');
 });
