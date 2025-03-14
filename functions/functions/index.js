@@ -32,10 +32,11 @@ exports.convertadmin = functions.auth.user().onCreate((user) => {
 
 exports.slackStatusWebhook = functions.https.onRequest(async (req, res) => {
   try {
-      const event = req.body.event;
+      const event     = req.body?.event;
+      const challenge = req.body?.challenge;
 
       if (!event || event.type !== "presence_change") {
-          return res.status(400).send("Evento no válido");
+          return res.status(400).send({response: "Evento no válido", challenge: challenge});
       }
 
       const { user, presence } = event;
@@ -46,7 +47,7 @@ exports.slackStatusWebhook = functions.https.onRequest(async (req, res) => {
 
       if (!slackUserInfo.data.ok) {
           console.error("Error al obtener info del usuario:", slackUserInfo.data);
-          return res.status(500).send("Error al obtener info del usuario");
+          return res.status(500).send({response: "Error al obtener info del usuario", challenge: challenge});
       }
 
       const { profile } = slackUserInfo.data.user;
@@ -69,9 +70,9 @@ exports.slackStatusWebhook = functions.https.onRequest(async (req, res) => {
 
       await db.collection("checkin").add(checkinData);
 
-      res.status(200).send("Check-in registrado");
+      res.status(200).send({response: "Check-in registrado", challenge: challenge});
   } catch (error) {
       console.error("Error procesando el evento:", error);
-      res.status(500).send("Error interno del servidor");
+      res.status(500).send({response: "Error interno del servidor", challenge: null});
   }
 });
