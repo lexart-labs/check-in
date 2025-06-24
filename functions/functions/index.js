@@ -7,6 +7,7 @@ require('dotenv').config();
 
 const ADMIN_USERS     = process.env.ADMIN_USERS.split(',');
 const SLACK_BOT_TOKEN = process.env.SLACK_BOT_TOKEN;
+const CRON_SCHEDULE  = process.env.CRON_SCHEDULE ?? '0 3-19 * * 1-5';
 
 admin.initializeApp();
 const db = admin.firestore();
@@ -125,7 +126,7 @@ exports.convertadmin = functions.auth.user().onCreate((user) => {
   }
 });
 
-exports.checkSlackUsersPresence = functions.pubsub.schedule('0 9-21 * * 1-5').onRun(async (context) => {
+exports.checkSlackUsersPresence = functions.pubsub.schedule(CRON_SCHEDULE).onRun(async (context) => {
   console.log('Running scheduled function ::');
 
   // Get all users from Slack
