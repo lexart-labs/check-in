@@ -67,7 +67,7 @@ async function createCheckin(user) {
     email: user.profile.email,
     isOtpValid: true,  // Assuming OTP is valid, you can change this logic based on your needs
     tenant: 'lexart',
-    timeBrb: userPresence === 'away' ? currentDate.getTime() : null,
+    timeBrb: null,
     timeCheckin: userPresence === 'active' ? currentDate.getTime() : null,
     username: user.real_name,
   };
@@ -92,7 +92,7 @@ async function createCheckin(user) {
       await docRef.update({
         _rawDate: rawDate,
         date: currentDate.getTime(),
-        timeBrb: userPresence === 'away' ? currentDate.getTime() : null,
+        timeBrb: null,
         timeCheckin: userPresence === 'active' ? currentDate.getTime() : null
       });
       console.log(`Check-in updated for user ${user.real_name}`, userPresence, checkinData);
