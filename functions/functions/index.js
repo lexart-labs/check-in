@@ -93,12 +93,13 @@ async function createCheckin(user) {
       await docRef.update({
         _rawDate: rawDate,
         date: currentDate.getTime(),
-        timeBrb: null,
+        timeBrb: userPresence === 'away' ? currentDate.getTime() : null,
         timeCheckin: userPresence === 'active' ? currentDate.getTime() : null
       });
       console.log(`Check-in updated for user ${user.real_name}`, userPresence, checkinData);
-    } else {
-      // Create new record
+    } else if (timeCheckin.timeCheckin !== null) {
+      // Only insert for the first time if timeCheckin is not null
+      // Avoit BRB status
       await db.collection('checkin').add(checkinData);
       console.log(`New check-in added for user ${user.real_name}`, userPresence, checkinData);
     }
