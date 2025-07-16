@@ -68,7 +68,7 @@ async function createCheckin(user) {
     email: user.profile.email,
     isOtpValid: true,  // Assuming OTP is valid, you can change this logic based on your needs
     tenant: 'lexart',
-    timeBrb: userPresence === 'away' ? currentDate.getTime() : null,
+    timeBrb: null,
     timeCheckin: userPresence === 'active' ? currentDate.getTime() : null,
     username: user.real_name,
   };
@@ -97,8 +97,9 @@ async function createCheckin(user) {
         timeCheckin: userPresence === 'active' ? currentDate.getTime() : null
       });
       console.log(`Check-in updated for user ${user.real_name}`, userPresence, checkinData);
-    } else {
-      // Create new record
+    } else if (timeCheckin.timeCheckin !== null) {
+      // Only insert for the first time if timeCheckin is not null
+      // Avoit BRB status
       await db.collection('checkin').add(checkinData);
       console.log(`New check-in added for user ${user.real_name}`, userPresence, checkinData);
     }
