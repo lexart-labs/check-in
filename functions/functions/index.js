@@ -97,7 +97,7 @@ async function createCheckin(user) {
         timeCheckin: userPresence === 'active' ? currentDate.getTime() : null
       });
       console.log(`Check-in updated for user ${user.real_name}`, userPresence, checkinData);
-    } else if (timeCheckin.timeCheckin !== null) {
+    } else if (checkinData.timeCheckin !== null) {
       // Only insert for the first time if timeCheckin is not null
       // Avoit BRB status
       await db.collection('checkin').add(checkinData);
