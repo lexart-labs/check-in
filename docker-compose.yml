@@ -6,6 +6,6 @@ services:
     restart: unless-stopped
     env_file: ./.env
     ports:
-      - $WEBAPP_PORT:$WEBAPP_DOCKER_PORT
+      - 127.0.0.1:$WEBAPP_PORT:$WEBAPP_DOCKER_PORT
     stdin_open: true
     tty: true
